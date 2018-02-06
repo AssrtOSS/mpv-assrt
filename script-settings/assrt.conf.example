@@ -1,0 +1,13 @@
+# 菜单外观
+## 设置多少秒后自动关闭菜单，设为0时不关闭
+auto_close=0
+## 设置每页显示字幕条数
+max_lines=15
+## 设置菜单字体大小
+font_size=24
+
+# 设置是否使用https
+use_https=no
+
+# 自定义API Token, 在http://assrt.net/usercp.php注册后免费使用 
+# api_token=
