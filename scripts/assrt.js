@@ -283,11 +283,13 @@ ASSRT.prototype.searchSubtitle = function () {
                     Ass.alpha("00", this._enableColor) + 
                     Ass.alpha("55", this._enableColor) + 
                     title + 
-                    Ass.alpha("00", this._enableColor) + 
-                    (this._enableColor? "  " : "  [") + 
+                    Ass.alpha("00", this._enableColor);
+			}
+			if(sublist[i].lang != null) {
+				title += (this._enableColor? "  " : "  [") + 
                     formatLang(sublist[i].lang.desc, this._enableColor) + 
                     (this._enableColor? "  " : "]  ");
-            }
+			}
             menuOptions.push(title);
             this._list_map[title] = ret.sub.subs[i].id;
             //if (selectEntry === sub)
