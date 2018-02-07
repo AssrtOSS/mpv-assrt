@@ -16,6 +16,21 @@ var Ass = require('AssFormat'),
 
 var VERSION = "1.0.0";
 
+var tmpDir;
+
+var getTmpDir = function () {
+    if(!tmpDir) {
+        var temp = mp.utils.getenv("TEMP") || mp.utils.getenv("TEP");
+        if(temp) {
+            // is windows
+            tmpDir = temp;
+        } else {
+            tmpDir = "/tmp";
+        }
+    }
+    return tmpDir;
+}
+
 var fileExists = function(path) {
     if(mp.utils.file_info) { // >= 0.28.0
         return mp.utils.file_info(path);
@@ -53,7 +68,7 @@ var testDownloadTool = function () {
 var httpget = function(args, url, saveFile) {
     args = args.slice();
     var isSaveFile = (saveFile != null);
-    saveFile = saveFile || ".assrt-helper.tmp";
+    saveFile = saveFile || mp.utils.join_path(getTmpDir(), ".assrt-helper.tmp");
 
     if(args[0] == "powershell") {
         args[args.length - 1] += "\"" + url + "\" -Outfile \"" + saveFile + "\"";
@@ -273,8 +288,8 @@ ASSRT.prototype.searchSubtitle = function () {
     for (i = 0; i < sublist.length; ++i) {
             // Replace #@# back to /
             title = Ass._old_esc(sublist[i].native_name.replace(/#@#/g, '/'));
-			if(title == "")
-				title = Ass._old_esc(sublist[i].videoname.replace(/#@#/g, '/'));
+            if(title == "")
+                title = Ass._old_esc(sublist[i].videoname.replace(/#@#/g, '/'));
             if(sublist[i].release_site != null) {
                 title = Ass.alpha("88", this._enableColor) + 
                     (this._enableColor? "" : "[") + 
@@ -284,12 +299,12 @@ ASSRT.prototype.searchSubtitle = function () {
                     Ass.alpha("55", this._enableColor) + 
                     title + 
                     Ass.alpha("00", this._enableColor);
-			}
-			if(sublist[i].lang != null) {
-				title += (this._enableColor? "  " : "  [") + 
+            }
+            if(sublist[i].lang != null) {
+                title += (this._enableColor? "  " : "  [") + 
                     formatLang(sublist[i].lang.desc, this._enableColor) + 
                     (this._enableColor? "  " : "]  ");
-			}
+            }
             menuOptions.push(title);
             this._list_map[title] = ret.sub.subs[i].id;
             //if (selectEntry === sub)
@@ -342,9 +357,19 @@ ASSRT.prototype.getSubtitleDetail = function (selection) {
 ASSRT.prototype.downloadSubtitle = function (selection) {
     var url = this._list_map[selection];
     
-    this.showOsdInfo("正在下载字幕...", 0);
+    this.showOsdInfo("正在下载字幕...", 10);
+    
+    var saveFile;
+    var mediaPath = mp.get_property("path", " ");
+    // use the same directory as mediaPath by default
+    var _dir = mp.utils.split_path(mediaPath)[0];
+    if(mediaPath && mediaPath.match(/^[^:]+:\/\//)) {
+        // is web, use temp path
+        _dir = getTmpDir();
+    }
+    saveFile = mp.utils.join_path(_dir, selection);
 
-    var ret = httpget(this.cmd, url, selection);
+    var ret = httpget(this.cmd, url, saveFile);
     
     if(!ret) {
         this.showOsdError("字幕下载失败，请检查控制台输出", 2);
@@ -352,7 +377,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
     }
     
     this.showOsdOk("字幕已下载", 2);
-    mp.commandv("sub-add", selection);
+    mp.commandv("sub-add", saveFile);
     
     
 };
