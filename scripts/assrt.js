@@ -2,7 +2,7 @@
  * assrt.js
  *
  * Description: Search subtitle on assrt.net
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      ShooterOpensource
  * URL:        https://github.com/ShooterSub/mpv-scripts
  * License:     Apache License, Version 2.0
@@ -14,7 +14,7 @@ var Ass = require('AssFormat'),
         Options = require('Options'),
         SelectionMenu = require('SelectionMenu');
 
-var VERSION = "1.0.0";
+var VERSION = "1.0.1";
 
 var tmpDir;
 
@@ -344,6 +344,12 @@ ASSRT.prototype.getSubtitleDetail = function (selection) {
             this._list_map[title] = filelist[i].url.replace(/#@#/g, '/');
             //if (selectEntry === sub)
             //    initialSelectionIdx = menuOptions.length - 1;
+    }
+    // if filelist is empty and file is not archive
+    if (menuOptions.length == 0 && ret.sub.subs[0].filename.match(/\.(rar|zip|7z)$/) === null) {
+        title = ret.sub.subs[0].filename
+        menuOptions.push(title);
+        this._list_map[title] = ret.sub.subs[0].url.replace(/#@#/g, '/');
     }
     
     this.menu.getMetadata().type = "detail";
