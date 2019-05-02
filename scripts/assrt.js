@@ -3,8 +3,8 @@
  *
  * Description: Search subtitle on assrt.net
  * Version:     1.0.1
- * Author:      ShooterOpensource
- * URL:        https://github.com/ShooterSub/mpv-scripts
+ * Author:      AssrtOpensource
+ * URL:         https://github.com/AssrtOSS/mpv-assrt
  * License:     Apache License, Version 2.0
  */
 
@@ -20,7 +20,7 @@ var tmpDir;
 
 var getTmpDir = function () {
     if(!tmpDir) {
-        var temp = mp.utils.getenv("TEMP") || mp.utils.getenv("TEP");
+        var temp = mp.utils.getenv("TEMP") || mp.utils.getenv("TMP");
         if(temp) {
             // is windows
             tmpDir = temp;
@@ -46,7 +46,7 @@ var fileExists = function(path) {
 var testDownloadTool = function () {
     var _UA = mp.get_property("mpv-version").replace(" ", "/") + " assrt-js-" + VERSION;
     var UA = "User-Agent: " + _UA;
-    var cmds = [["curl", "-S", "-s", "-H", UA], ["wget", "-q", "--header", UA, "-O", "-"],
+    var cmds = [["curl", "-SLs", "-H", UA], ["wget", "-q", "--header", UA, "-O", "-"],
                 ["powershell", " Invoke-WebRequest -UserAgent \"" + _UA + "\"  -ContentType \"application/json; charset=utf-8\" -URI "]];
     var _winhelper = mp.utils.split_path(mp.get_script_file())[0] + "win-helper.vbs";
     if(fileExists(_winhelper)) {
@@ -168,7 +168,7 @@ var ASSRT = function (options) {
         }
         var state = self._menu_state.pop();
         self._list_map= state.list_map;
-        Ass.esc = state.ass_esc,
+        Ass.esc = state.ass_esc;
         self.menu.getMetadata().type = state.type;
         self.menu.setTitle(state.title);
         self.menu.setOptions(state.options, state.idx);
@@ -415,7 +415,8 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
 
     // Provide the bindable mpv command which opens/cycles through the menu.
     // * Bind this via input.conf: `a script-binding assrt`.
-    mp.add_key_binding('a', 'assrt', function () {
+    mp.add_key_binding('a', 'assrt-js', function () {
         assrt.searchSubtitle();
     });
+    mp.msg.info("loaded assrt Javscript flavor")
 })();

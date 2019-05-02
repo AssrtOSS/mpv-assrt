@@ -7,7 +7,7 @@ max_lines=15
 font_size=24
 
 # 设置是否使用https
-use_https=no
+use_https=yes
 
-# 自定义API Token, 在http://assrt.net/usercp.php注册后免费使用 
+# 自定义API Token, 在https://assrt.net/usercp.php注册后免费使用 
 # api_token=
