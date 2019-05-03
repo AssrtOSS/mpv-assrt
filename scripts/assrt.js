@@ -416,7 +416,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
 
     // Provide the bindable mpv command which opens/cycles through the menu.
     // * Bind this via input.conf: `a script-binding assrt`.
-    mp.add_forced_key_binding('a', 'assrt-js', function () {
+    mp.add_key_binding('a', 'assrt', function () {
         assrt.searchSubtitle();
     });
     mp.msg.info("loaded assrt Javscript flavor")

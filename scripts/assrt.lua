@@ -464,7 +464,7 @@ local function init()
 
   -- Provide the bindable mpv command which opens/cycles through the menu.
   -- Bind self via input.conf: `a script-binding assrt`.
-  mp.add_forced_key_binding(
+  mp.add_key_binding(
     "a",
     "assrt-lua",
     function()

@@ -18,9 +18,13 @@ mpv-assrt
 
 ## 快捷键
 
-如需自定义快捷键，可以在`input.conf`中添加下列行，如更改快捷键为<kbd>Ctrl</kbd>+<kbd>a</kbd>：
+如需自定义快捷键，可以在`input.conf`中添加下列行，如将Javascript版本快捷键更改为<kbd>Ctrl</kbd>+<kbd>a</kbd>：
 
     ctrl+a script-binding assrt
+
+绑定Lua版本
+
+    ctrl+a script-binding assrt-lua
 
 `input.conf`位于mpv主目录下，如果该文件不存在，请创建一个空白的文件。
 
