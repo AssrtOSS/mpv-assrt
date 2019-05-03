@@ -3,9 +3,9 @@ mpv-assrt
 
 使用[assrt.net](http://assrt.net)匹配并下载字幕。
 
-需要mpv **0.26.0** 及以上版本支持。
+提供Lua版本和Javascript版本。Javascript版需要mpv **0.26.0** 及以上版本支持。
 
-支持Windows, macOS和Linux。
+支持Windows, macOS和Linux。在Windows下，使用Lua版本需安装Powershell；Javascript版本除Powershell外可以使用VBScript请求网络。
 
 <p align="center"> <img alt="mpv-assrt-screenshot" src="https://wx1.sinaimg.cn/large/436919cbgy1fo7fcq8s3jg20go0b4u0x.gif"/> </p>
 
@@ -20,9 +20,17 @@ mpv-assrt
 
 如需自定义快捷键，可以在`input.conf`中添加下列行，如更改快捷键为<kbd>Ctrl</kbd>+<kbd>a</kbd>：
 
-    ctrl-a script-binding assrt
+    ctrl+a script-binding assrt
 
 `input.conf`位于mpv主目录下，如果该文件不存在，请创建一个空白的文件。
+
+## 脚本版本
+
+如果mpv编译了Javascript支持，将优先使用Javascript版本的脚本。
+
+可以通过`mpv -v`查看`List of enabled features`，若包含`javascript`则说明编译了Javascript支持。
+
+已确认的支持Javascript的版本包括`mpv.io`上提供的Windows版非官方编译二进制文件和Homebrew预编译的二进制文件。
 
 ## 配置文件
 
@@ -46,6 +54,6 @@ use_https=no
 
 如需自定义API Token，可以在网站上注册后从[用户面板](https://secure.assrt.net/usercp.php)中获得。
 
-## 依赖库
+## 另见
 
-- [SteveJobzniak's Modules.js](https://github.com/SteveJobzniak/mpv-tools/tree/master/scripts/modules.js)
+- [VideoPlayerCode's Modules.js](https://github.com/VideoPlayerCode/mpv-tools/tree/master/scripts/modules.js)
