@@ -255,8 +255,9 @@ ASSRT.prototype.searchSubtitle = function () {
     var fpath = mp.get_property("path", " ");
     var fname = mp.utils.split_path(fpath);
     var try_args = ["is_file", "no_muxer"];
+    fname = fname[1].replace(/[\(\)~]/g, "");
     for(var i = 0; i < try_args.length; i++) {
-        var ret = this.api("/sub/search", "q=" + encodeURIComponent(fname[1]) + "&" + try_args[i] + "=1");
+        var ret = this.api("/sub/search", "q=" + encodeURIComponent(fname) + "&" + try_args[i] + "=1");
         if (ret && ret.sub.subs.length > 0) {
             break;
         }
@@ -415,7 +416,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
 
     // Provide the bindable mpv command which opens/cycles through the menu.
     // * Bind this via input.conf: `a script-binding assrt`.
-    mp.add_key_binding('a', 'assrt-js', function () {
+    mp.add_forced_key_binding('a', 'assrt-js', function () {
         assrt.searchSubtitle();
     });
     mp.msg.info("loaded assrt Javscript flavor")

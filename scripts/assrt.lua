@@ -302,6 +302,7 @@ function ASSRT:searchSubtitle()
   local _, fname = utils.split_path(fpath)
   local try_args = {"is_file", "no_muxer"}
   local ret
+  fname = fname:gsub("[%(%)~]", "")
   for i = 1, 2 do
     ret = self:api("/sub/search", "q=" .. encodeURIComponent(fname) .. "&" .. try_args[i] .. "=1")
     if ret and #ret.sub.subs > 0 then
@@ -463,7 +464,7 @@ local function init()
 
   -- Provide the bindable mpv command which opens/cycles through the menu.
   -- Bind self via input.conf: `a script-binding assrt`.
-  mp.add_key_binding(
+  mp.add_forced_key_binding(
     "a",
     "assrt-lua",
     function()
