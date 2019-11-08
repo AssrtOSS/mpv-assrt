@@ -2,21 +2,21 @@
     assrt.lua
 
     Description: Search subtitle on assrt.net
-    Version:     1.0.1
+    Version:     1.0.2
     Author:      AssrtOpensource
     URL:         https:-- github.com/AssrtOSS/mpv-assrt
     License:     Apache License, Version 2.0
 ]] --
 
--- luacheck: globals mp read_options
+-- luacheck: globals mp
 
 local Ass = require("modules.AssFormat")
 local SelectionMenu = require("modules.SelectionMenu")
 
-require("mp.options")
+local read_options = read_options or require("mp.options").read_options
 local utils = require("mp.utils")
 
-local VERSION = "1.0.1"
+local VERSION = "1.0.2"
 
 local ASSRT = {}
 
@@ -437,7 +437,7 @@ local function init()
     max_lines = 15,
     font_size = 24
   }
-  read_options(userConfig)
+  read_options(userConfig, "assrt")
 
   -- Create and initialize the media browser instance.
   local assrt

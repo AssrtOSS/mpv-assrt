@@ -2,7 +2,7 @@
  * assrt.js
  *
  * Description: Search subtitle on assrt.net
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      AssrtOpensource
  * URL:         https://github.com/AssrtOSS/mpv-assrt
  * License:     Apache License, Version 2.0
@@ -14,7 +14,7 @@ var Ass = require('AssFormat'),
         Options = require('Options'),
         SelectionMenu = require('SelectionMenu');
 
-var VERSION = "1.0.1";
+var VERSION = "1.0.2";
 
 var tmpDir;
 
@@ -390,24 +390,29 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
 };
 
 (function () {
-    var userConfig = new Options.advanced_options({
-            api_token: "tNjXZUnOJWcHznHDyalNMYqqP6IdDdpQ",
-            use_https: true,
-            
-            auto_close: 5,
-            max_lines: 15,
-            font_size: 24,
-        });
+    // object will be mofied in place
+    var userConfig = {
+        api_token: "tNjXZUnOJWcHznHDyalNMYqqP6IdDdpQ",
+        use_https: true,
+        auto_close: 5,
+        max_lines: 15,
+        font_size: 24,
+    };
+    if (mp.options) {
+        mp.options.read_options(userConfig, "assrt");
+    } else {
+       new Options.read_options(userConfig, "assrt");
+    }
 
     // Create and initialize the media browser instance.
     try {
         var assrt = new ASSRT({ // Throws.
-                apiToken: userConfig.getValue('api_token'),
-                useHttps: userConfig.getValue('use_https'),
-                autoCloseDelay: userConfig.getValue('auto_close'),
-                maxLines: userConfig.getValue('max_lines'),
-                menuFontSize: userConfig.getValue('font_size'),
-            });
+            apiToken: userConfig['api_token'],
+            useHttps: userConfig['use_https'],
+            autoCloseDelay: userConfig['auto_close'],
+            maxLines: userConfig['max_lines'],
+            menuFontSize: userConfig['font_size'],
+        });
     } catch (e) {
         mp.msg.error('ASSRT: ' + e + '.');
         mp.osd_message('ASSRT: ' + e + '.', 3);
