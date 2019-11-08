@@ -13,7 +13,7 @@ mpv-assrt
 
 1. 下载[zip压缩包](https://github.com/AssrtOSS/mpv-assrt/archive/master.zip)或`git clone`本项目
 2. 解压压缩包
-3. 将`scripts`和`script-settings`文件夹复制到mpv主目录中。Windows用户的mpv主目录位于与`mpv.exe`同目录的`mpv`文件夹；Linux和macOS用户的mpv主目录位于`~/.config/mpv`。
+3. 将`scripts`和`script-opts`文件夹复制到mpv主目录中。Windows用户的mpv主目录位于与`mpv.exe`同目录的`mpv`文件夹；Linux和macOS用户的mpv主目录位于`~/.config/mpv`。
 4. 打开视频后，按<kbd>a</kbd>键调起搜索字幕。
 
 ## 快捷键
@@ -30,7 +30,8 @@ mpv-assrt
 
 ## 脚本版本
 
-如果mpv编译了Javascript支持，将优先使用Javascript版本的脚本。
+如果mpv未编译Javascript支持，将使用Lua版本的脚本；如果mpv同时支持Lua和Javascript，mpv将随机选择版本加载，
+请手动删除不需要的脚本版本。
 
 可以通过`mpv -v`查看`List of enabled features`，若包含`javascript`则说明编译了Javascript支持。
 
@@ -38,7 +39,7 @@ mpv-assrt
 
 ## 配置文件
 
-如需自定义配置，请将`script-settings`中的**assrt.conf.example**更名为**assrt.conf**。
+如需自定义配置，请将`script-opts`中的**assrt.conf.example**更名为**assrt.conf**。
 
 ```conf
 # 菜单外观
