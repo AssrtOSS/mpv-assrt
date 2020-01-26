@@ -90,7 +90,7 @@ var httpget = function(args, url, saveFile) {
             args: args,
             cancellable: true
         });
-        
+
     if(result.stderr || result.status != 0) {
         mp.msg.error(result.stderr || ("subprocess exit with code " + result.status));
         return;
@@ -256,18 +256,22 @@ ASSRT.prototype.searchSubtitle = function () {
     var fname = mp.utils.split_path(fpath);
     var try_args = ["is_file", "no_muxer"];
     fname = fname[1].replace(/[\(\)~]/g, "");
+    var sublist = [];
     for(var i = 0; i < try_args.length; i++) {
         var ret = this.api("/sub/search", "q=" + encodeURIComponent(fname) + "&" + try_args[i] + "=1");
         if (ret && ret.sub.subs.length > 0) {
-            break;
+            sublist = sublist.concat(ret.sub.subs);
+            if(sublist.length >= 3) {
+                break;
+            }
         }
     }
-    if(!ret) {
+    if(!sublist) {
         if(this.cmd) //don't overlap cmd error
             this.showOsdError("API请求错误，请检查控制台输出", 2);
         return;
     }
-    else if(Object.keys(ret.sub.subs).length == 0) { //????
+    else if(sublist.length == 0) { //????
         this.showOsdOk("没有符合条件的字幕", 1);
         return;
     }
@@ -278,7 +282,6 @@ ASSRT.prototype.searchSubtitle = function () {
         
     this._list_map = {};
             
-    var sublist = ret.sub.subs;
     if(!Ass._old_esc) {
         Ass._old_esc = Ass.esc;
         // disable escape temporarily
@@ -306,8 +309,10 @@ ASSRT.prototype.searchSubtitle = function () {
                     formatLang(sublist[i].lang.desc, this._enableColor) + 
                     (this._enableColor? "  " : "]  ");
             }
-            menuOptions.push(title);
-            this._list_map[title] = ret.sub.subs[i].id;
+            if(!this._list_map[title]) {
+                menuOptions.push(title);
+                this._list_map[title] = sublist[i].id;
+            }
             //if (selectEntry === sub)
             //    initialSelectionIdx = menuOptions.length - 1;
     }

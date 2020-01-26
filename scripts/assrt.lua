@@ -301,21 +301,29 @@ function ASSRT:searchSubtitle()
   local fpath = mp.get_property("path", " ")
   local _, fname = utils.split_path(fpath)
   local try_args = {"is_file", "no_muxer"}
-  local ret
+  local sublist
   fname = fname:gsub("[%(%)~]", "")
   for i = 1, 2 do
-    ret = self:api("/sub/search", "q=" .. encodeURIComponent(fname) .. "&" .. try_args[i] .. "=1")
-    if ret and #ret.sub.subs > 0 then
-      break
+    local ret = self:api("/sub/search", "q=" .. encodeURIComponent(fname) .. "&" .. try_args[i] .. "=1")
+    if ret and ret.sub.subs then
+      if not sublist then
+        sublist = {}
+      end
+      for _, s in ipairs(ret.sub.subs) do
+        table.insert(sublist, s)
+      end
+      if #sublist >= 3 then
+        break
+      end
     end
   end
-  if not ret then
+  if not sublist then
     if self.cmd then -- don't overlap cmd error
       self:showOsdError("API请求错误，请检查控制台输出", 2)
     end
     return
   end
-  if #ret.sub.subs == 0 then -- ????
+  if #sublist == 0 then -- ????
     self:showOsdOk("没有符合条件的字幕", 1)
     return
   end
@@ -324,7 +332,6 @@ function ASSRT:searchSubtitle()
   local initialSelectionIdx = 0
   self._list_map = {}
 
-  local sublist = ret.sub.subs
   if not Ass._old_esc then
     Ass._old_esc = Ass.esc
     -- disable escape temporarily
@@ -353,7 +360,7 @@ function ASSRT:searchSubtitle()
           formatLang(sublist[i].lang.desc, self._enableColor) .. (self._enableColor and "  " or "]  ")
     end
     table.insert(menuOptions, title)
-    self._list_map[title] = ret.sub.subs[i].id
+    self._list_map[title] = sublist[i].id
     -- if (selectEntry == sub)
     --    initialSelectionIdx = menuOptions.length - 1
   end
