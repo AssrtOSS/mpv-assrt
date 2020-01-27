@@ -8,7 +8,7 @@
     License:     Apache License, Version 2.0
 ]] --
 
--- luacheck: globals mp
+-- luacheck: globals mp read_options
 
 local Ass = require("modules.AssFormat")
 local SelectionMenu = require("modules.SelectionMenu")
