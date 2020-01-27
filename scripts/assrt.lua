@@ -473,7 +473,7 @@ local function init()
   -- Bind self via input.conf: `a script-binding assrt`.
   mp.add_key_binding(
     "a",
-    "assrt-lua",
+    "assrt",
     function()
       assrt:searchSubtitle()
     end

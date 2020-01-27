@@ -22,15 +22,11 @@ mpv-assrt
 
     ctrl+a script-binding assrt
 
-绑定Lua版本
-
-    ctrl+a script-binding assrt-lua
-
 `input.conf`位于mpv主目录下，如果该文件不存在，请创建一个空白的文件。
 
 ## 脚本版本
 
-如果mpv未编译Javascript支持，将使用Lua版本的脚本；如果mpv同时支持Lua和Javascript，mpv将随机选择版本加载，
+如果mpv未编译Javascript支持，将使用Lua版本的脚本；如果mpv同时支持Lua和Javascript，mpv将**随机**选择版本加载，
 请手动删除不需要的脚本版本。
 
 可以通过`mpv -v`查看`List of enabled features`，若包含`javascript`则说明编译了Javascript支持。
