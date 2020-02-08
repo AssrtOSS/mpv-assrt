@@ -10,13 +10,21 @@
 
 -- luacheck: globals mp read_options
 
-local Ass = require("modules.AssFormat")
-local SelectionMenu = require("modules.SelectionMenu")
-
 local read_options = read_options or require("mp.options").read_options
 local utils = require("mp.utils")
 
-local VERSION = "1.0.2"
+local ok, Ass = pcall(require, "modules.AssFormat")
+if not ok then
+  -- try inject current script directory into package.path
+  local script_path = debug.getinfo(1, "S").source:sub(2)
+  local script_dir = utils.split_path(script_path)
+  package.path = script_dir .. "?.lua;;" .. package.path
+  Ass = require("modules.AssFormat")
+end
+
+local SelectionMenu = require("modules.SelectionMenu")
+
+local VERSION = "1.0.3"
 
 local ASSRT = {}
 
