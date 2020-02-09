@@ -13,18 +13,23 @@
 local read_options = read_options or require("mp.options").read_options
 local utils = require("mp.utils")
 
-local ok, Ass = pcall(require, "modules.AssFormat")
-if not ok then
-  -- try inject current script directory into package.path
-  local script_path = debug.getinfo(1, "S").source:sub(2)
-  local script_dir = utils.split_path(script_path)
-  package.path = script_dir .. "?.lua;;" .. package.path
-  Ass = require("modules.AssFormat")
+local script_path = debug.getinfo(1, "S").source:sub(2)
+local script_dir = utils.split_path(script_path)
+
+local Ass
+do
+  local ok
+  ok, Ass = pcall(require, "modules.AssFormat")
+  if not ok then
+    -- try inject current script directory into package.path
+    package.path = script_dir .. "?.lua;;" .. package.path
+    Ass = require("modules.AssFormat")
+  end
 end
 
 local SelectionMenu = require("modules.SelectionMenu")
 
-local VERSION = "1.0.3"
+local VERSION = "1.0.4"
 
 local ASSRT = {}
 
@@ -54,6 +59,14 @@ local function getTmpDir()
   return tmpDir
 end
 
+local function fileExists(path)
+  if utils.file_info then -- >= 0.28.0
+      return utils.file_info(path)
+  end
+  local ok, _ = pcall(io.open, path)
+  return ok
+end
+
 local function testDownloadTool()
   local _UA = mp.get_property("mpv-version"):gsub(" ", "/") .. " assrt-" .. VERSION
   local UA = "User-Agent: " .. _UA
@@ -65,8 +78,10 @@ local function testDownloadTool()
       ' Invoke-WebRequest -UserAgent "' .. _UA .. '"  -ContentType "application/json charset=utf-8" -URI '
     }
   }
-  -- cscript is not avaiable under windows because of missing API
-  -- in Lua hook. Need at least mp.script_path or mp.utils.write_file
+  local _winhelper = script_dir .. "win-helper.vbs"
+  if fileExists(_winhelper) then
+    table.insert(cmds, { "cscript", "/nologo", _winhelper, _UA })
+  end
   for i = 1, #cmds do
     local result =
       utils.subprocess(
