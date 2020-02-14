@@ -29,7 +29,7 @@ end
 
 local SelectionMenu = require("modules.SelectionMenu")
 
-local VERSION = "1.0.4"
+local VERSION = "1.0.5"
 
 local ASSRT = {}
 
@@ -362,28 +362,33 @@ function ASSRT:searchSubtitle()
       return str
     end
   end
+  local seen = {}
   for i = 1, #sublist do
-    local title = Ass._old_esc(sublist[i].native_name)
-    if title == "" then
-      title = Ass._old_esc(sublist[i].videoname)
+    local id = sublist[i].id
+    if not seen[id] then
+      seen[id] = true
+      local title = Ass._old_esc(sublist[i].native_name)
+      if title == "" then
+        title = Ass._old_esc(sublist[i].videoname)
+      end
+      if sublist[i].release_site ~= nil then
+        title =
+          Ass.alpha("88", self._enableColor) ..
+          (self._enableColor and "" or "[") ..
+            Ass._old_esc(sublist[i].release_site) ..
+              (self._enableColor and "  " or "]  ") ..
+                Ass.alpha("00", self._enableColor) ..
+                  Ass.alpha("55", self._enableColor) .. title .. Ass.alpha("00", self._enableColor)
+      end
+      if sublist[i].lang ~= nil then
+        title =
+          title ..
+          (self._enableColor and "  " or "  [") ..
+            formatLang(sublist[i].lang.desc, self._enableColor) .. (self._enableColor and "  " or "]  ")
+      end
+      table.insert(menuOptions, title)
+      self._list_map[title] = id
     end
-    if sublist[i].release_site ~= nil then
-      title =
-        Ass.alpha("88", self._enableColor) ..
-        (self._enableColor and "" or "[") ..
-          Ass._old_esc(sublist[i].release_site) ..
-            (self._enableColor and "  " or "]  ") ..
-              Ass.alpha("00", self._enableColor) ..
-                Ass.alpha("55", self._enableColor) .. title .. Ass.alpha("00", self._enableColor)
-    end
-    if sublist[i].lang ~= nil then
-      title =
-        title ..
-        (self._enableColor and "  " or "  [") ..
-          formatLang(sublist[i].lang.desc, self._enableColor) .. (self._enableColor and "  " or "]  ")
-    end
-    table.insert(menuOptions, title)
-    self._list_map[title] = sublist[i].id
     -- if (selectEntry == sub)
     --    initialSelectionIdx = menuOptions.length - 1
   end

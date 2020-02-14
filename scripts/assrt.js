@@ -14,7 +14,7 @@ var Ass = require('AssFormat'),
         Options = require('Options'),
         SelectionMenu = require('SelectionMenu');
 
-var VERSION = "1.0.2";
+var VERSION = "1.0.3";
 
 var tmpDir;
 
@@ -289,7 +289,13 @@ ASSRT.prototype.searchSubtitle = function () {
             return str;
         };
     }
+    var seen = {};
     for (i = 0; i < sublist.length; ++i) {
+            var id = sublist[i].id;
+            if (seen[id]) {
+                continue;
+            }
+            seen[id] = true;
             // Replace #@# back to /
             title = Ass._old_esc(sublist[i].native_name.replace(/#@#/g, '/'));
             if(title == "")
