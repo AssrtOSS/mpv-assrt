@@ -11,17 +11,17 @@
 'use strict';
 
 var Ass = require('AssFormat'),
-        Options = require('Options'),
-        SelectionMenu = require('SelectionMenu');
+    Options = require('Options'),
+    SelectionMenu = require('SelectionMenu');
 
 var VERSION = "1.0.3";
 
 var tmpDir;
 
 var getTmpDir = function () {
-    if(!tmpDir) {
+    if (!tmpDir) {
         var temp = mp.utils.getenv("TEMP") || mp.utils.getenv("TMP");
-        if(temp) {
+        if (temp) {
             // is windows
             tmpDir = temp;
         } else {
@@ -31,13 +31,13 @@ var getTmpDir = function () {
     return tmpDir;
 }
 
-var fileExists = function(path) {
-    if(mp.utils.file_info) { // >= 0.28.0
+var fileExists = function (path) {
+    if (mp.utils.file_info) { // >= 0.28.0
         return mp.utils.file_info(path);
     }
     try {
         mp.utils.read_file(path, 1)
-    } catch(e) {
+    } catch (e) {
         return false;
     }
     return true;
@@ -46,17 +46,20 @@ var fileExists = function(path) {
 var testDownloadTool = function () {
     var _UA = mp.get_property("mpv-version").replace(" ", "/") + " assrt-js-" + VERSION;
     var UA = "User-Agent: " + _UA;
-    var cmds = [["curl", "-SLs", "-H", UA], ["wget", "-q", "--header", UA, "-O", "-"],
-                ["powershell", " Invoke-WebRequest -UserAgent \"" + _UA + "\"  -ContentType \"application/json; charset=utf-8\" -URI "]];
+    var cmds = [
+        ["curl", "-SLs", "-H", UA],
+        ["wget", "-q", "--header", UA, "-O", "-"],
+        ["powershell", " Invoke-WebRequest -UserAgent \"" + _UA + "\"  -ContentType \"application/json; charset=utf-8\" -URI "]
+    ];
     var _winhelper = mp.utils.split_path(mp.get_script_file())[0] + "win-helper.vbs";
-    if(fileExists(_winhelper)) {
-            cmds.push(["cscript", "/nologo", _winhelper, _UA]);
+    if (fileExists(_winhelper)) {
+        cmds.push(["cscript", "/nologo", _winhelper, _UA]);
     };
     for (var i = 0; i < cmds.length; i++) {
         var result = mp.utils.subprocess({
-                args: [cmds[i][0], '-h'],
-                cancellable: false
-            });
+            args: [cmds[i][0], '-h'],
+            cancellable: false
+        });
         if (typeof result.stdout === 'string' && result.status != -1) {
             mp.msg.info("selected: ", cmds[i][0]);
             return cmds[i];
@@ -65,18 +68,18 @@ var testDownloadTool = function () {
     return null;
 }
 
-var httpget = function(args, url, saveFile) {
+var httpget = function (args, url, saveFile) {
     args = args.slice();
     var isSaveFile = (saveFile != null);
     saveFile = saveFile || mp.utils.join_path(getTmpDir(), ".assrt-helper.tmp");
 
-    if(args[0] == "powershell") {
+    if (args[0] == "powershell") {
         args[args.length - 1] += "\"" + url + "\" -Outfile \"" + saveFile + "\"";
-    } else if(args[0] == "cscript") {
+    } else if (args[0] == "cscript") {
         args.push(url, saveFile);
     } else {
-        if(isSaveFile) {
-            if(args[0] == "wget") {
+        if (isSaveFile) {
+            if (args[0] == "wget") {
                 args.pop(); // pop "-"
             } else {
                 args.push("-o");
@@ -87,20 +90,20 @@ var httpget = function(args, url, saveFile) {
     }
 
     var result = mp.utils.subprocess({
-            args: args,
-            cancellable: true
-        });
+        args: args,
+        cancellable: true
+    });
 
-    if(result.stderr || result.status != 0) {
+    if (result.stderr || result.status != 0) {
         mp.msg.error(result.stderr || ("subprocess exit with code " + result.status));
         return;
     }
-    
-    if(isSaveFile) {
+
+    if (isSaveFile) {
         // TODO: check file sanity
         return true;
     } else {
-        if(args[0] == "powershell" || args[0] == "cscript") {
+        if (args[0] == "powershell" || args[0] == "cscript") {
             return mp.utils.read_file(saveFile);
         } else {
             return result.stdout;
@@ -113,23 +116,25 @@ var ASSRT = function (options) {
     this.cmd = null;
     this.apiToken = options.apiToken;
     this.useHttps = options.useHttps;
-    
+
     this._list_map = {};
     this._enableColor = mp.get_property_bool('vo-configured') || true;
     this._menu_state = [];
-    
+
     this.menu = new SelectionMenu({
         maxLines: options.maxLines,
         menuFontSize: options.menuFontSize,
         autoCloseDelay: options.autoCloseDelay,
         keyRebindings: options.keyRebindings
     });
-    this.menu.setMetadata({type:null});
+    this.menu.setMetadata({
+        type: null
+    });
     this.menu.setUseTextColors(this._enableColor);
-    
+
     var self = this;
     // callbacks
-    var _open = function() {
+    var _open = function () {
         self._menu_state.push({
             type: self.menu.getMetadata().type,
             options: self.menu.options,
@@ -138,7 +143,7 @@ var ASSRT = function (options) {
             idx: self.menu.selectionIdx,
             ass_esc: Ass.esc,
         });
-        
+
         var selectedItem = self.menu.getSelectedItem();
         self.menu.hideMenu();
         switch (self.menu.getMetadata().type) {
@@ -152,22 +157,22 @@ var ASSRT = function (options) {
     }
     this.menu.setCallbackMenuOpen(_open);
     this.menu.setCallbackMenuRight(_open);
-    
-    this.menu.setCallbackMenuHide(function() {
+
+    this.menu.setCallbackMenuHide(function () {
         // restore escape function if needed
-        if(Ass._old_esc) {
+        if (Ass._old_esc) {
             Ass.esc = Ass._old_esc;
             Ass._old_esc = null;
         }
     });
-    
-    var _undo = function() {
-        if(!self._menu_state.length) {
+
+    var _undo = function () {
+        if (!self._menu_state.length) {
             self.menu.hideMenu();
             return;
         }
         var state = self._menu_state.pop();
-        self._list_map= state.list_map;
+        self._list_map = state.list_map;
         Ass.esc = state.ass_esc;
         self.menu.getMetadata().type = state.type;
         self.menu.setTitle(state.title);
@@ -178,23 +183,23 @@ var ASSRT = function (options) {
     this.menu.setCallbackMenuLeft(_undo);
 };
 
-var _showOsdColor = function(self, output, duration, color) {
+var _showOsdColor = function (self, output, duration, color) {
     var c = self._enableColor;
     var _originalFontSize = mp.get_property_number('osd-font-size');
     mp.set_property('osd-font-size', self.menu.menuFontSize);
-    mp.osd_message(Ass.startSeq(c)+Ass.color(color, c)+Ass.scale(75, c)+Ass.esc(output, c)+Ass.stopSeq(c), duration);
+    mp.osd_message(Ass.startSeq(c) + Ass.color(color, c) + Ass.scale(75, c) + Ass.esc(output, c) + Ass.stopSeq(c), duration);
     mp.set_property('osd-font-size', _originalFontSize);
 }
 
-ASSRT.prototype.showOsdError = function(output, duration) {
+ASSRT.prototype.showOsdError = function (output, duration) {
     _showOsdColor(this, output, duration, "FE2424");
 }
 
-ASSRT.prototype.showOsdInfo = function(output, duration) {
+ASSRT.prototype.showOsdInfo = function (output, duration) {
     _showOsdColor(this, output, duration, "F59D1A");
 }
 
-ASSRT.prototype.showOsdOk = function(output, duration) {
+ASSRT.prototype.showOsdOk = function (output, duration) {
     _showOsdColor(this, output, duration, "90FF90");
 }
 
@@ -206,9 +211,9 @@ ASSRT.prototype.api = function (uri, arg) {
         mp.msg.error("no wget or curl found");
         this.showOsdError("ASSRT: 没有找到wget和curl，无法运行", 2);
         return;
-        
+
     }
-    
+
     var url = (this.useHttps ? "https" : "http") + "://api.assrt.net/v1" + uri + "?token=" + this.apiToken + "&" + (arg ? arg : "");
     var ret = httpget(this.cmd, url);
 
@@ -229,9 +234,9 @@ ASSRT.prototype.api = function (uri, arg) {
 
 }
 
-var formatLang = function(s, output) {
+var formatLang = function (s, output) {
     s = Ass._old_esc(s)
-    if(!output) {
+    if (!output) {
         return s;
     }
     var color_list = {
@@ -240,9 +245,9 @@ var formatLang = function(s, output) {
         "繁": "000098",
         "双语": "ffffff",
     }
-    return s.replace(/([^\s]+)/g, function(match) {
+    return s.replace(/([^\s]+)/g, function (match) {
         var c = color_list[match]
-        if(c) {
+        if (c) {
             return Ass.color(c, true) + match + Ass.white(true);
         } else {
             return Ass.color("8e44ad", true) + match + Ass.white(true);
@@ -257,78 +262,77 @@ ASSRT.prototype.searchSubtitle = function () {
     var try_args = ["is_file", "no_muxer"];
     fname = fname[1].replace(/[\(\)~]/g, "");
     var sublist = [];
-    for(var i = 0; i < try_args.length; i++) {
+    for (var i = 0; i < try_args.length; i++) {
         var ret = this.api("/sub/search", "q=" + encodeURIComponent(fname) + "&" + try_args[i] + "=1");
         if (ret && ret.sub.subs.length > 0) {
             sublist = sublist.concat(ret.sub.subs);
-            if(sublist.length >= 3) {
+            if (sublist.length >= 3) {
                 break;
             }
         }
     }
-    if(!sublist) {
-        if(this.cmd) //don't overlap cmd error
+    if (!sublist) {
+        if (this.cmd) //don't overlap cmd error
             this.showOsdError("API请求错误，请检查控制台输出", 2);
         return;
-    }
-    else if(sublist.length == 0) { //????
+    } else if (sublist.length == 0) { //????
         this.showOsdOk("没有符合条件的字幕", 1);
         return;
     }
-    
+
     var i, title,
         menuOptions = [],
         initialSelectionIdx = 0;
-        
+
     this._list_map = {};
-            
-    if(!Ass._old_esc) {
+
+    if (!Ass._old_esc) {
         Ass._old_esc = Ass.esc;
         // disable escape temporarily
-        Ass.esc = function(str, escape) {
+        Ass.esc = function (str, escape) {
             return str;
         };
     }
     var seen = {};
     for (i = 0; i < sublist.length; ++i) {
-            var id = sublist[i].id;
-            if (seen[id]) {
-                continue;
-            }
-            seen[id] = true;
-            // Replace #@# back to /
-            title = Ass._old_esc(sublist[i].native_name.replace(/#@#/g, '/'));
-            if(title == "")
-                title = Ass._old_esc(sublist[i].videoname.replace(/#@#/g, '/'));
-            if(sublist[i].release_site != null) {
-                title = Ass.alpha("88", this._enableColor) + 
-                    (this._enableColor? "" : "[") + 
-                    Ass._old_esc(sublist[i].release_site.replace(/#@#/g, '/')) + 
-                    (this._enableColor? "  " : "]  ") +
-                    Ass.alpha("00", this._enableColor) + 
-                    Ass.alpha("55", this._enableColor) + 
-                    title + 
-                    Ass.alpha("00", this._enableColor);
-            }
-            if(sublist[i].lang != null) {
-                title += (this._enableColor? "  " : "  [") + 
-                    formatLang(sublist[i].lang.desc, this._enableColor) + 
-                    (this._enableColor? "  " : "]  ");
-            }
-            if(!this._list_map[title]) {
-                menuOptions.push(title);
-                this._list_map[title] = sublist[i].id;
-            }
-            //if (selectEntry === sub)
-            //    initialSelectionIdx = menuOptions.length - 1;
+        var id = sublist[i].id;
+        if (seen[id]) {
+            continue;
+        }
+        seen[id] = true;
+        // Replace #@# back to /
+        title = Ass._old_esc(sublist[i].native_name.replace(/#@#/g, '/'));
+        if (title == "")
+            title = Ass._old_esc(sublist[i].videoname.replace(/#@#/g, '/'));
+        if (sublist[i].release_site != null) {
+            title = Ass.alpha("88", this._enableColor) +
+                (this._enableColor ? "" : "[") +
+                Ass._old_esc(sublist[i].release_site.replace(/#@#/g, '/')) +
+                (this._enableColor ? "  " : "]  ") +
+                Ass.alpha("00", this._enableColor) +
+                Ass.alpha("55", this._enableColor) +
+                title +
+                Ass.alpha("00", this._enableColor);
+        }
+        if (sublist[i].lang != null) {
+            title += (this._enableColor ? "  " : "  [") +
+                formatLang(sublist[i].lang.desc, this._enableColor) +
+                (this._enableColor ? "  " : "]  ");
+        }
+        if (!this._list_map[title]) {
+            menuOptions.push(title);
+            this._list_map[title] = sublist[i].id;
+        }
+        //if (selectEntry === sub)
+        //    initialSelectionIdx = menuOptions.length - 1;
     }
-    
+
     this.menu.getMetadata().type = "list";
-    
+
     this.menu.setTitle("选择字幕");
     this.menu.setOptions(menuOptions, initialSelectionIdx);
     this.menu.renderMenu();
-    
+
 };
 
 ASSRT.prototype.getSubtitleDetail = function (selection) {
@@ -337,25 +341,25 @@ ASSRT.prototype.getSubtitleDetail = function (selection) {
 
     var ret = this.api("/sub/detail", "id=" + id);
     if (!ret) {
-        if(this.cmd) //don't overlap cmd error
+        if (this.cmd) //don't overlap cmd error
             this.showOsdError("API请求错误，请检查控制台输出", 2);
         return;
     }
-    
+
     var i, title,
         menuOptions = [],
         initialSelectionIdx = 0;
 
     this._list_map = {};
-        
+
     var filelist = ret.sub.subs[0].filelist;
     for (i = 0; i < filelist.length; ++i) {
-            // Replace #@# back to /
-            title = filelist[i].f;
-            menuOptions.push(title);
-            this._list_map[title] = filelist[i].url.replace(/#@#/g, '/');
-            //if (selectEntry === sub)
-            //    initialSelectionIdx = menuOptions.length - 1;
+        // Replace #@# back to /
+        title = filelist[i].f;
+        menuOptions.push(title);
+        this._list_map[title] = filelist[i].url.replace(/#@#/g, '/');
+        //if (selectEntry === sub)
+        //    initialSelectionIdx = menuOptions.length - 1;
     }
     // if filelist is empty and file is not archive
     if (menuOptions.length == 0 && ret.sub.subs[0].filename.match(/\.(rar|zip|7z)$/) === null) {
@@ -363,41 +367,41 @@ ASSRT.prototype.getSubtitleDetail = function (selection) {
         menuOptions.push(title);
         this._list_map[title] = ret.sub.subs[0].url.replace(/#@#/g, '/');
     }
-    
+
     this.menu.getMetadata().type = "detail";
-    
+
     this.menu.setTitle("下载字幕");
     this.menu.setOptions(menuOptions, initialSelectionIdx);
     this.menu.renderMenu();
-    
+
 };
 
 ASSRT.prototype.downloadSubtitle = function (selection) {
     var url = this._list_map[selection];
-    
+
     this.showOsdInfo("正在下载字幕...", 10);
-    
+
     var saveFile;
     var mediaPath = mp.get_property("path", " ");
     // use the same directory as mediaPath by default
     var _dir = mp.utils.split_path(mediaPath)[0];
-    if(mediaPath && mediaPath.match(/^[^:]+:\/\//)) {
+    if (mediaPath && mediaPath.match(/^[^:]+:\/\//)) {
         // is web, use temp path
         _dir = getTmpDir();
     }
     saveFile = mp.utils.join_path(_dir, selection);
 
     var ret = httpget(this.cmd, url, saveFile);
-    
-    if(!ret) {
+
+    if (!ret) {
         this.showOsdError("字幕下载失败，请检查控制台输出", 2);
         return;
     }
-    
+
     this.showOsdOk("字幕已下载", 2);
     mp.commandv("sub-add", saveFile);
-    
-    
+
+
 };
 
 (function () {
@@ -412,7 +416,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
     if (mp.options) {
         mp.options.read_options(userConfig, "assrt");
     } else {
-       new Options.read_options(userConfig, "assrt");
+        new Options.read_options(userConfig, "assrt");
     }
 
     // Create and initialize the media browser instance.
