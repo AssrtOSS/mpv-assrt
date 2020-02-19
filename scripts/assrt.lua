@@ -29,7 +29,10 @@ end
 
 local SelectionMenu = require("modules.SelectionMenu")
 
-local VERSION = "1.0.5"
+local VERSION = "1.0.6"
+
+local COMMON_PREFIX_KEY = "##common-prefix##"
+local RLSITE_KEY = "##release-site##"
 
 local ASSRT = {}
 
@@ -158,6 +161,7 @@ function ASSRT.new(options)
   tbl.cmd = nil
   tbl.apiToken = options.apiToken
   tbl.useHttps = options.useHttps
+  tbl.autoRename = options.autoRename
 
   tbl._list_map = {}
   tbl._enableColor = mp.get_property_bool("vo-configured") or true
@@ -400,6 +404,30 @@ function ASSRT:searchSubtitle()
   self.menu:renderMenu()
 end
 
+-- https://github.com/NemoAlex/glutton/blob/master/src/services/util.js#L32
+local function findCommon(names)
+  if #names == 1 then
+    return nil
+  end
+  local name = names[1]
+  local common = ''
+  for i=2, #name, 1 do
+    local test = name:sub(1, i)
+    local success = true
+    for j=2, #names, 1 do
+      if names[j]:sub(1, i) ~= test then
+        success = false
+        break
+      end
+    end
+    if not success then
+      break
+    end
+    common = test
+  end
+  return #common
+end
+
 function ASSRT:getSubtitleDetail(selection)
   self:showOsdInfo("正在获取字幕详情...", 2)
   local id = self._list_map[selection]
@@ -417,13 +445,21 @@ function ASSRT:getSubtitleDetail(selection)
   self._list_map = {}
 
   local filelist = ret.sub.subs[1].filelist
+  local fnames = {}
   for i = 1, #filelist do
     title = filelist[i].f
     table.insert(menuOptions, title)
+    table.insert(fnames, title)
     self._list_map[title] = filelist[i].url
     -- if (selectEntry == sub)
     --    initialSelectionIdx = menuOptions.length - 1
   end
+
+  self._list_map[COMMON_PREFIX_KEY] = findCommon(fnames)
+
+  local rlsite = ret.sub.subs[1].release_site
+  self._list_map[RLSITE_KEY] = rlsite == "个人" and nil or rlsite
+
   -- if filelist is empty and file is not archive
   if menuOptions.length == 0 and ret.sub.subs[1].filename:gmatch("%.(rar|zip|7z)$") == nil then
     title = ret.sub.subs[1].filename
@@ -451,7 +487,29 @@ function ASSRT:downloadSubtitle(selection)
     -- is web, use temp path
     _dir = getTmpDir()
   end
-  saveFile = utils.join_path(_dir, selection)
+  local fname = selection
+  if self.autoRename then
+    local mname = mp.get_property("filename/no-ext", " ")
+    if mname then
+      -- rlsite
+      if self._list_map[RLSITE_KEY] then
+        mname = mname .. "." .. self._list_map[RLSITE_KEY]
+      end
+      -- partial without common prefix
+      local common_len = self._list_map[COMMON_PREFIX_KEY]
+      local suffix
+      if common_len then
+        suffix = selection:sub(common_len)
+      end
+      if not suffix then -- nothing left? use extension
+        suffix = selection:match("(%.[^\\%.]+)$")
+      elseif suffix:sub(1, 1) ~= "." then
+        mname = mname .. "."
+      end
+      fname = mname .. suffix
+    end
+  end
+  saveFile = utils.join_path(_dir, fname)
 
   local ret = httpget(self.cmd, url, saveFile)
 
@@ -470,7 +528,8 @@ local function init()
     use_https = true,
     auto_close = 5,
     max_lines = 15,
-    font_size = 24
+    font_size = 24,
+    auto_rename = true,
   }
   read_options(userConfig, "assrt")
 
@@ -486,7 +545,8 @@ local function init()
           useHttps = userConfig["use_https"],
           autoCloseDelay = userConfig["auto_close"],
           maxLines = userConfig["max_lines"],
-          menuFontSize = userConfig["font_size"]
+          menuFontSize = userConfig["font_size"],
+          autoRename = userConfig['auto_rename'],
         }
       )
     end

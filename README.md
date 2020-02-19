@@ -51,6 +51,9 @@ use_https=no
 
 # 自定义API Token
 # api_token=
+
+# 下载字幕命名为与视频文件同名
+auto_rename=yes
 ```
 
 如需自定义API Token，可以在网站上注册后从[用户面板](https://secure.assrt.net/usercp.php)中获得。

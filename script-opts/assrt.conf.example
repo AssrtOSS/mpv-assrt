@@ -11,3 +11,6 @@ use_https=yes
 
 # 自定义API Token, 在https://assrt.net/usercp.php注册后免费使用 
 # api_token=
+
+# 下载字幕命名为与视频文件同名
+auto_rename=yes

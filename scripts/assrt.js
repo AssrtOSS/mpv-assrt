@@ -14,7 +14,10 @@ var Ass = require('AssFormat'),
     Options = require('Options'),
     SelectionMenu = require('SelectionMenu');
 
-var VERSION = "1.0.3";
+var VERSION = "1.0.4";
+
+var COMMON_PREFIX_KEY = "##common-prefix##";
+var RLSITE_KEY = "##release-site##";
 
 var tmpDir;
 
@@ -116,6 +119,7 @@ var ASSRT = function (options) {
     this.cmd = null;
     this.apiToken = options.apiToken;
     this.useHttps = options.useHttps;
+    this.autoRename = options.autoRename;
 
     this._list_map = {};
     this._enableColor = mp.get_property_bool('vo-configured') || true;
@@ -335,6 +339,30 @@ ASSRT.prototype.searchSubtitle = function () {
 
 };
 
+// https://github.com/NemoAlex/glutton/blob/master/src/services/util.js#L32
+function findCommon(names) {
+    if (names.length == 1) {
+        return null;
+    }
+    var name = names[0];
+    var common = '';
+    for (var i = 1; i < name.length; i++) {
+        var test = name.substring(0, i);
+        var success = true;
+        for (var j = 1; j < names.length; j++) {
+            if (names[j].substring(0, i) != test) {
+                success = false
+                break
+            }
+        }
+        if (!success) {
+            break
+        }
+        common = test
+    }
+    return common.length;
+}
+
 ASSRT.prototype.getSubtitleDetail = function (selection) {
     this.showOsdInfo("正在获取字幕详情...", 2);
     var id = this._list_map[selection];
@@ -353,14 +381,23 @@ ASSRT.prototype.getSubtitleDetail = function (selection) {
     this._list_map = {};
 
     var filelist = ret.sub.subs[0].filelist;
+    var fnames = [];
     for (i = 0; i < filelist.length; ++i) {
         // Replace #@# back to /
         title = filelist[i].f;
         menuOptions.push(title);
+        fnames.push(title);
         this._list_map[title] = filelist[i].url.replace(/#@#/g, '/');
         //if (selectEntry === sub)
         //    initialSelectionIdx = menuOptions.length - 1;
     }
+
+
+    this._list_map[COMMON_PREFIX_KEY] = findCommon(fnames)
+
+    var rlsite = ret.sub.subs[0].release_site;
+    this._list_map[RLSITE_KEY] = rlsite == "个人" ? null : rlsite;
+
     // if filelist is empty and file is not archive
     if (menuOptions.length == 0 && ret.sub.subs[0].filename.match(/\.(rar|zip|7z)$/) === null) {
         title = ret.sub.subs[0].filename
@@ -389,7 +426,29 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
         // is web, use temp path
         _dir = getTmpDir();
     }
-    saveFile = mp.utils.join_path(_dir, selection);
+    var fname = selection;
+    if (this.autoRename) {
+        var mname = mp.get_property("filename/no-ext", " ");
+        if (mname) {
+            // rlsite
+            if (this._list_map[RLSITE_KEY]) {
+                mname = mname + "." + this._list_map[RLSITE_KEY];
+            }
+            // partial without common prefix
+            var common_len = this._list_map[COMMON_PREFIX_KEY];
+            var suffix;
+            if (common_len) {
+                suffix = selection.substring(common_len);
+            }
+            if (!suffix) { // nothing left? use extension
+                suffix = selection.match(/(\.[^\.]+)$/)[0];
+            } else if (suffix.substring(0, 1) != ".") {
+                mname = mname + ".";
+            }
+            fname = mname + suffix;
+        }
+    }
+    saveFile = mp.utils.join_path(_dir, fname);
 
     var ret = httpget(this.cmd, url, saveFile);
 
@@ -412,6 +471,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
         auto_close: 5,
         max_lines: 15,
         font_size: 24,
+        auto_rename: true,
     };
     if (mp.options) {
         mp.options.read_options(userConfig, "assrt");
@@ -427,6 +487,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
             autoCloseDelay: userConfig['auto_close'],
             maxLines: userConfig['max_lines'],
             menuFontSize: userConfig['font_size'],
+            autoRename: userConfig['auto_rename'],
         });
     } catch (e) {
         mp.msg.error('ASSRT: ' + e + '.');
