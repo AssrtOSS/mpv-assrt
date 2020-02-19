@@ -38,22 +38,10 @@ local ASSRT = {}
 
 local tmpDir
 
-local function getenv(n)
-  local result =
-    utils.subprocess(
-    {
-      args = {"echo", "$" .. n},
-      cancellable = false
-    }
-  )
-  return result and result.stdout
-end
-
 local function getTmpDir()
   if not tmpDir then
-    local temp = getenv("TEMP") or getenv("TMP")
+    local temp = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR")
     if temp then
-      -- is windows
       tmpDir = temp
     else
       tmpDir = "/tmp"

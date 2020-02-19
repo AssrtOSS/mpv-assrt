@@ -23,9 +23,10 @@ var tmpDir;
 
 var getTmpDir = function () {
     if (!tmpDir) {
-        var temp = mp.utils.getenv("TEMP") || mp.utils.getenv("TMP");
+        var temp = mp.utils.getenv("TEMP") ||
+            mp.utils.getenv("TMP") ||
+            mp.utils.getenv("TMPDIR");
         if (temp) {
-            // is windows
             tmpDir = temp;
         } else {
             tmpDir = "/tmp";
