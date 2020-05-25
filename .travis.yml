@@ -15,4 +15,4 @@ before_install:
   - luarocks install luacheck
 
 script:
-  - luacheck scripts
+  - luacheck src

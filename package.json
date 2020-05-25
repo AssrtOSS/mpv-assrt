@@ -1,0 +1,24 @@
+{
+  "name": "mpv-assrt",
+  "version": "1.0.0",
+  "description": "mpv-assrt",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AssrtOSS/mpv-assrt.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AssrtOSS/mpv-assrt/issues"
+  },
+  "homepage": "https://github.com/AssrtOSS/mpv-assrt#readme",
+  "dependencies": {
+    "coffee-distiller": "^0.1.3",
+    "coffee-script": "^1.12.7",
+    "lua-distiller": "^0.2.3"
+  }
+}

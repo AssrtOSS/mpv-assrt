@@ -11,7 +11,6 @@
 'use strict';
 
 var Ass = require('AssFormat'),
-    Options = require('Options'),
     SelectionMenu = require('SelectionMenu');
 
 var VERSION = "1.0.4";
@@ -477,6 +476,7 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
     if (mp.options) {
         mp.options.read_options(userConfig, "assrt");
     } else {
+        var Options = require('Options')
         new Options.read_options(userConfig, "assrt");
     }
 
