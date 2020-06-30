@@ -394,7 +394,7 @@ end
 
 -- https://github.com/NemoAlex/glutton/blob/master/src/services/util.js#L32
 local function findCommon(names)
-  if #names == 1 then
+  if #names <= 1 then
     return nil
   end
   local name = names[1]
@@ -414,6 +414,15 @@ local function findCommon(names)
     common = test
   end
   return #common
+end
+
+local function isExtensionArchive(s)
+  for _, p in ipairs({".rar", ".zip", ".7z"}) do
+    if s:sub(#s-#p+1) == p then
+      return true
+    end
+  end
+  return false
 end
 
 function ASSRT:getSubtitleDetail(selection)
@@ -448,14 +457,18 @@ function ASSRT:getSubtitleDetail(selection)
   local rlsite = ret.sub.subs[1].release_site
   self._list_map[RLSITE_KEY] = rlsite == "个人" and nil or rlsite
 
-  -- if filelist is empty and file is not archive
-  if menuOptions.length == 0 and ret.sub.subs[1].filename:gmatch("%.(rar|zip|7z)$") == nil then
+  self.menu:getMetadata().type = "detail"
+
+  -- if filelist is empty and file is not archive, go ahead and download
+  if (not menuOptions.length or menuOptions.length == 0) and
+      not isExtensionArchive(ret.sub.subs[1].filename) then
     title = ret.sub.subs[1].filename
     table.insert(menuOptions, title)
     self._list_map[title] = ret.sub.subs[1].url
-  end
 
-  self.menu:getMetadata().type = "detail"
+    -- download it directly
+    return self:downloadSubtitle(title)
+  end
 
   self.menu:setTitle("下载字幕")
   self.menu:setOptions(menuOptions, initialSelectionIdx)
