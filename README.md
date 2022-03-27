@@ -58,6 +58,18 @@ auto_rename=yes
 
 如需自定义API Token，可以在网站上注册后从[用户面板](https://secure.assrt.net/usercp.php)中获得。
 
+## 打包
+
+mpv 0.33 及以上版本对Lua对多文件依赖处理有问题，因此`scripts`目录下对文件均由源代码`src`打包
+成单文件生成。
+
+如果你对源代码(`src`)进行了修改，可以使用以下命令重新打包：
+
+```shell
+npm install
+npm run build-lua
+```
+
 ## 另见
 
 - [VideoPlayerCode's Modules.js](https://github.com/VideoPlayerCode/mpv-tools/tree/master/scripts/modules.js)

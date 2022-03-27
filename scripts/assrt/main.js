@@ -2,13 +2,16 @@
  * assrt.js
  *
  * Description: Search subtitle on assrt.net
- * Version:     1.0.2
+ * Version:     1.1.0
  * Author:      AssrtOpensource
  * URL:         https://github.com/AssrtOSS/mpv-assrt
  * License:     Apache License, Version 2.0
  */
 
 'use strict';
+
+// >= 0.33.0
+mp.module_paths.push(mp.get_script_directory());
 
 var Ass = require('AssFormat'),
     SelectionMenu = require('SelectionMenu');
@@ -50,7 +53,7 @@ var testDownloadTool = function () {
     var _UA = mp.get_property("mpv-version").replace(" ", "/") + " assrt-js-" + VERSION;
     var UA = "User-Agent: " + _UA;
     var cmds = [
-        ["curl", "-SLs", "-H", UA],
+        ["curl", "-SLs", "-H", UA, "--max-time", "3"],
         ["wget", "-q", "--header", UA, "-O", "-"],
         ["powershell", " Invoke-WebRequest -UserAgent \"" + _UA + "\"  -ContentType \"application/json; charset=utf-8\" -URI "]
     ];

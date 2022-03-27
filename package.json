@@ -4,7 +4,7 @@
   "description": "mpv-assrt",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+      "build-lua": "lua-distill -i src/assrt.lua -x mp.options,mp.utils,bit -o scripts/assrt.lua && sed -i 's/define(\\\"modules\\\//define(\\\"modules./g' scripts/assrt.lua"
   },
   "repository": {
     "type": "git",
