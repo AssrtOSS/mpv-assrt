@@ -62,7 +62,7 @@ local function testDownloadTool()
   local _UA = mp.get_property("mpv-version"):gsub(" ", "/") .. " assrt-" .. VERSION
   local UA = "User-Agent: " .. _UA
   local cmds = {
-    {"curl", "-SLs", "-H", UA},
+    {"curl", "-SLs", "-H", UA, "--max-time", "3"},
     {"wget", "-q", "--header", UA, "-O", "-"},
     {
       "powershell",
