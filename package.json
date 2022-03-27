@@ -19,6 +19,6 @@
   "dependencies": {
     "coffee-distiller": "^0.1.3",
     "coffee-script": "^1.12.7",
-    "lua-distiller": "^0.2.3"
+    "lua-distiller": "^0.2.5"
   }
 }
