@@ -2,7 +2,7 @@
  * assrt.js
  *
  * Description: Search subtitle on assrt.net
- * Version:     1.1.0
+ * Version:     1.1.1
  * Author:      AssrtOpensource
  * URL:         https://github.com/AssrtOSS/mpv-assrt
  * License:     Apache License, Version 2.0
@@ -20,6 +20,7 @@ var VERSION = "1.0.4";
 
 var COMMON_PREFIX_KEY = "##common-prefix##";
 var RLSITE_KEY = "##release-site##";
+var SEARCH_MORE_KEY = "##search-more##";
 
 var tmpDir;
 
@@ -262,14 +263,16 @@ var formatLang = function (s, output) {
     }) + Ass.white(true);;
 }
 
-ASSRT.prototype.searchSubtitle = function () {
+ASSRT.prototype.searchSubtitle = function (no_muxer_only) {
     this.showOsdInfo("正在搜索字幕...", 2);
     var fpath = mp.get_property("path", " ");
     var fname = mp.utils.split_path(fpath);
     var try_args = ["is_file", "no_muxer"];
     fname = fname[1].replace(/[\(\)~]/g, "");
     var sublist = [];
-    for (var i = 0; i < try_args.length; i++) {
+    var already_try_no_muxer = false;
+    for (var i = no_muxer_only? 1: 0; i < try_args.length; i++) {
+        already_try_no_muxer = i == try_args.length - 1;
         var ret = this.api("/sub/search", "q=" + encodeURIComponent(fname) + "&" + try_args[i] + "=1");
         if (ret && ret.sub.subs.length > 0) {
             sublist = sublist.concat(ret.sub.subs);
@@ -334,6 +337,14 @@ ASSRT.prototype.searchSubtitle = function () {
         //    initialSelectionIdx = menuOptions.length - 1;
     }
 
+    if (!already_try_no_muxer) {
+        var t = Ass.alpha("A0", this._enableColor) +
+                "查找更多..." +
+                Ass.alpha("00", this._enableColor);
+        menuOptions.push(t);
+        this._list_map[t] = SEARCH_MORE_KEY;
+    }
+
     this.menu.getMetadata().type = "list";
 
     this.menu.setTitle("选择字幕");
@@ -367,8 +378,12 @@ function findCommon(names) {
 }
 
 ASSRT.prototype.getSubtitleDetail = function (selection) {
-    this.showOsdInfo("正在获取字幕详情...", 2);
     var id = this._list_map[selection];
+    if(id == SEARCH_MORE_KEY) {
+        return this.searchSubtitle(true);
+    }
+
+    this.showOsdInfo("正在获取字幕详情...", 2);
 
     var ret = this.api("/sub/detail", "id=" + id);
     if (!ret) {

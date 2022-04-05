@@ -2,7 +2,7 @@
     assrt.lua
 
     Description: Search subtitle on assrt.net
-    Version:     1.0.2
+    Version:     1.1.1
     Author:      AssrtOpensource
     URL:         https:-- github.com/AssrtOSS/mpv-assrt
     License:     Apache License, Version 2.0
@@ -33,6 +33,7 @@ local VERSION = "1.0.6"
 
 local COMMON_PREFIX_KEY = "##common-prefix##"
 local RLSITE_KEY = "##release-site##"
+local SEARCH_MORE_KEY = "##search-more##"
 
 local ASSRT = {}
 
@@ -311,14 +312,16 @@ local function encodeURIComponent(s)
   return s:gsub("[^%w%-_%.%!%~%*%'%(%)]", char_to_pchar)
 end
 
-function ASSRT:searchSubtitle()
+function ASSRT:searchSubtitle(no_muxer_only)
   self:showOsdInfo("正在搜索字幕...", 2)
   local fpath = mp.get_property("path", " ")
   local _, fname = utils.split_path(fpath)
   local try_args = {"is_file", "no_muxer"}
-  local sublist
   fname = fname:gsub("[%(%)~]", "")
-  for i = 1, 2 do
+  local sublist
+  local already_try_no_muxer = false
+  for i = (no_muxer_only and 2 or 1), 2 do
+    already_try_no_muxer = i == #try_args
     local ret = self:api("/sub/search", "q=" .. encodeURIComponent(fname) .. "&" .. try_args[i] .. "=1")
     if ret and ret.sub.subs then
       if not sublist then
@@ -385,6 +388,14 @@ function ASSRT:searchSubtitle()
     --    initialSelectionIdx = menuOptions.length - 1
   end
 
+  if not already_try_no_muxer then
+    local t = Ass.alpha("A0", self._enableColor) ..
+              "查找更多..." ..
+              Ass.alpha("00", self._enableColor)
+    table.insert(menuOptions, t)
+    self._list_map[t] = SEARCH_MORE_KEY
+  end
+
   self.menu:getMetadata().type = "list"
 
   self.menu:setTitle("选择字幕")
@@ -426,8 +437,12 @@ local function isExtensionArchive(s)
 end
 
 function ASSRT:getSubtitleDetail(selection)
-  self:showOsdInfo("正在获取字幕详情...", 2)
   local id = self._list_map[selection]
+  if id == SEARCH_MORE_KEY then
+    return self:searchSubtitle(true)
+  end
+
+  self:showOsdInfo("正在获取字幕详情...", 2)
 
   local ret = self:api("/sub/detail", "id=" .. id)
   if not ret and self.cmd then -- don't overlap cmd error
