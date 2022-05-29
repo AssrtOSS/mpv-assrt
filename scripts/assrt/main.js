@@ -54,7 +54,7 @@ var testDownloadTool = function () {
     var _UA = mp.get_property("mpv-version").replace(" ", "/") + " assrt-js-" + VERSION;
     var UA = "User-Agent: " + _UA;
     var cmds = [
-        ["curl", "-SLs", "-H", UA, "--max-time", "3"],
+        ["curl", "-SLs", "-H", UA, "--max-time", "5"],
         ["wget", "-q", "--header", UA, "-O", "-"],
         ["powershell", " Invoke-WebRequest -UserAgent \"" + _UA + "\"  -ContentType \"application/json; charset=utf-8\" -URI "]
     ];
@@ -400,7 +400,7 @@ ASSRT.prototype.getSubtitleDetail = function (selection) {
 
     var filelist = ret.sub.subs[0].filelist;
     var fnames = [];
-    for (i = 0; i < filelist.length; ++i) {
+    for (var i = 0; i < filelist.length; ++i) {
         // Replace #@# back to /
         title = filelist[i].f;
         menuOptions.push(title);
@@ -468,7 +468,12 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
     }
     saveFile = mp.utils.join_path(_dir, fname);
 
-    var ret = httpget(this.cmd, url, saveFile);
+    var ret;
+    for (var i = 1; i <= 3; i ++) {
+        ret = httpget(this.cmd, url, saveFile);
+        if (ret) break;
+        this.showOsdInfo("字幕下载失败，重试" + i, 2)
+    }
 
     if (!ret) {
         this.showOsdError("字幕下载失败，请检查控制台输出", 2);

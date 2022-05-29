@@ -63,7 +63,7 @@ local function testDownloadTool()
   local _UA = mp.get_property("mpv-version"):gsub(" ", "/") .. " assrt-" .. VERSION
   local UA = "User-Agent: " .. _UA
   local cmds = {
-    {"curl", "-SLs", "-H", UA, "--max-time", "3"},
+    {"curl", "-SLs", "-H", UA, "--max-time", "5"},
     {"wget", "-q", "--header", UA, "-O", "-"},
     {
       "powershell",
@@ -527,7 +527,14 @@ function ASSRT:downloadSubtitle(selection)
   end
   saveFile = utils.join_path(_dir, fname)
 
-  local ret = httpget(self.cmd, url, saveFile)
+  local ret
+  for i=1, 3 do
+    ret = httpget(self.cmd, url, saveFile)
+    if ret then
+      self:showOsdInfo("字幕下载失败，重试" .. i, 2)
+      break
+    end
+  end
 
   if not ret then
     self:showOsdError("字幕下载失败，请检查控制台输出", 2)
