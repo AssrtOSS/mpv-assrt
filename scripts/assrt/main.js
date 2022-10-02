@@ -359,6 +359,8 @@ function findCommon(names) {
         return null;
     }
     var name = names[0];
+    if (name === null) return null;
+
     var common = '';
     for (var i = 1; i < name.length; i++) {
         var test = name.substring(0, i);
@@ -526,3 +528,4 @@ ASSRT.prototype.downloadSubtitle = function (selection) {
     });
     mp.msg.info("loaded assrt Javscript flavor")
 })();
+

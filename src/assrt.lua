@@ -409,6 +409,10 @@ local function findCommon(names)
     return nil
   end
   local name = names[1]
+  if not name then
+      return nil
+  end
+
   local common = ''
   for i=2, #name, 1 do
     local test = name:sub(1, i)
